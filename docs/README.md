@@ -53,6 +53,4 @@ campus-connect/
 │   └── mockInternship.js # Sample internship data
 ├── assets/              # Images and icons
 └── docs/               # This documentation
-```
 
-Happy coding! 🎓
