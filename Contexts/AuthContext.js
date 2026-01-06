@@ -5,14 +5,13 @@ export const AuthContext = createContext();
 
 // Create the provider component
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); //null = not logged in
-
+  const [user, setUser] = useState(null); 
   
   const login = (email) => {
     setUser({
       id: '1',
       email: email,
-      name: email.split('@')[0], // Simple name from email
+      name: email.split('@')[0], 
     });
   };
 

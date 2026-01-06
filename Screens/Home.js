@@ -16,7 +16,7 @@ import { mockInternship } from '../mockData/mockInternship';
 export default function Home({ navigation }) {
   const { user } = useContext(AuthContext);
   
-  // Fonction pour obtenir l'icône de l'événement
+  // Fonctions pour obtenir l'icône /colors de l'événement
   const getEventIcon = (type) => {
     switch (type) {
       case 'Career Day': return require('../assets/Career_Day.png');
