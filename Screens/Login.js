@@ -1,19 +1,31 @@
 // File: /screens/Login.js
 import React, { useState, useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { AuthContext } from '../Contexts/AuthContext';
 
-export default function Login() {
+export default function Login({ onSwitchToSignup }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
 
-  const handleLogin = () => {
-    if (email && password) {
-      login(email);
-    } else {
-      alert('Please enter both email and password');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setError('Veuillez entrer votre email et mot de passe');
+      return;
     }
+
+    setLoading(true);
+    setError('');
+    
+    const result = await login(email, password);
+    
+    if (!result.success) {
+      setError(result.error);
+    }
+    
+    setLoading(false);
   };
 
   return (
@@ -22,14 +34,21 @@ export default function Login() {
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Text style={styles.logo}>Campus Connect</Text>
-          <Text style={styles.tagline}>Launch your professional journey</Text>
+          <Text style={styles.tagline}>Lancez votre carrière professionnelle</Text>
         </View>
       </View>
       
       {/* Login Form */}
       <View style={styles.formContainer}>
-        <Text style={styles.welcomeText}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to continue</Text>
+        <Text style={styles.welcomeText}>Bon retour !</Text>
+        <Text style={styles.subtitle}>Connectez-vous pour continuer</Text>
+        
+        {/* Error Message */}
+        {error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
         
         {/* Email Input */}
         <View style={styles.inputGroup}>
@@ -37,7 +56,8 @@ export default function Login() {
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder="Entrez votre email"
+              placeholderTextColor="#9CA3AF"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -56,11 +76,12 @@ export default function Login() {
         
         {/* Password Input */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>Mot de passe</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              placeholder="Enter your password"
+              placeholder="Entrez votre mot de passe"
+              placeholderTextColor="#9CA3AF"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -78,31 +99,38 @@ export default function Login() {
         
         {/* Login Button */}
         <TouchableOpacity 
-          style={styles.loginButton}
+          style={[styles.loginButton, loading && styles.buttonDisabled]}
           onPress={handleLogin}
+          disabled={loading}
         >
-          <Text style={styles.loginButtonText}>Sign In</Text>
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.loginButtonText}>Se connecter</Text>
+          )}
         </TouchableOpacity>
         
         {/* Forgot Password */}
         <TouchableOpacity style={styles.forgotPassword}>
-          <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+          <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
         </TouchableOpacity>
         
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
+          <Text style={styles.dividerText}>ou</Text>
           <View style={styles.dividerLine} />
         </View>
         
         <TouchableOpacity style={styles.googleButton}>
-          <Text style={styles.googleButtonText}>Continue with Google</Text>
+          <Text style={styles.googleButtonText}>Continuer avec Google</Text>
         </TouchableOpacity>
         
-        <Text style={styles.signupText}>
-          New to Campus Connect?{' '}
-          <Text style={styles.signupLink}>Create an account</Text>
-        </Text>
+        <View style={styles.signupContainer}>
+          <Text style={styles.signupText}>Nouveau sur Campus Connect ? </Text>
+          <TouchableOpacity onPress={onSwitchToSignup}>
+            <Text style={styles.signupLink}>Créer un compte</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -146,6 +174,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     marginBottom: 32,
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   
   // Simple Input Styles
@@ -255,12 +297,18 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 16,
   },
+  signupContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   signupText: {
-    textAlign: 'center',
     color: '#6B7280',
+    fontSize: 14,
   },
   signupLink: {
     color: '#0F8A5F',
     fontWeight: '600',
+    fontSize: 14,
   },
 });

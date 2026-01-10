@@ -1,10 +1,11 @@
 import React, { useState, useContext } from 'react';
-import { View, StatusBar, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
+import { View, StatusBar, TouchableOpacity, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthProvider, AuthContext } from './Contexts/AuthContext';
 import { ProfileProvider } from './Contexts/ProfileContext';
 import Login from './Screens/Login';
+import Signup from './Screens/Signup';
 import Home from './Screens/Home';
 import Events from './Screens/Events';
 import Internship from './Screens/Internships';
@@ -26,10 +27,24 @@ export default function App() {
 }
 
 function AppContent() {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+  const [isLogin, setIsLogin] = useState(true);
+  
+  // Afficher un loader pendant la vérification de l'authentification
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F9FAFB' }}>
+        <ActivityIndicator size="large" color="#0F8A5F" />
+        <Text style={{ marginTop: 16, color: '#6B7280' }}>Chargement...</Text>
+      </View>
+    );
+  }
   
   if (!user) {
-    return <Login />;
+    if (isLogin) {
+      return <Login onSwitchToSignup={() => setIsLogin(false)} />;
+    }
+    return <Signup onSwitchToLogin={() => setIsLogin(true)} />;
   }
 
   return (

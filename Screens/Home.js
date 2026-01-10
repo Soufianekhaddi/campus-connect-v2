@@ -278,7 +278,7 @@ export default function Home({ navigation }) {
           <FlatList
             data={mixedDashboardItems}
             renderItem={renderDashboardItem}
-            keyExtractor={item => item.id}
+            keyExtractor={item => `${item.dashboardType}-${item.id}`}
             scrollEnabled={false}
             numColumns={2}
             columnWrapperStyle={styles.dashboardRow}

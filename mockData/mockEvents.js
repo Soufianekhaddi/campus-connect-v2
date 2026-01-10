@@ -21,7 +21,7 @@ export const mockEvents = [
     type: 'Workshop'
   },
   {
-    id: '3',
+    id: '3p',
     title: 'Soirée Networking EMSI',
     description: 'Échangez avec des anciens lauréats EMSI et des entrepreneurs du secteur IT.',
     date: '2026-02-02',
