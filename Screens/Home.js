@@ -1,4 +1,4 @@
-import { useContext, useState, useMemo } from 'react';
+import { useContext, useState, useEffect, useMemo } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -8,14 +8,55 @@ import {
   FlatList,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { AuthContext } from '../Contexts/AuthContext';
-import { mockEvents } from '../mockData/mockEvents';
-import { mockInternship } from '../mockData/mockInternship';
+
+// URLs de l'API MockAPI
+const EVENTS_API = 'https://69623fc9d9d64c761907562a.mockapi.io/evenements';
+const INTERNSHIPS_API = 'https://69623fc9d9d64c761907562a.mockapi.io/stages';
 
 export default function Home({ navigation }) {
   const { user } = useContext(AuthContext);
   
+  // États pour les données de l'API
+  const [events, setEvents] = useState([]);
+  const [internships, setInternships] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // useEffect pour charger les données au démarrage
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Fonction pour récupérer les données depuis l'API
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [eventsResponse, internshipsResponse] = await Promise.all([
+        fetch(EVENTS_API),
+        fetch(INTERNSHIPS_API)
+      ]);
+
+      if (!eventsResponse.ok || !internshipsResponse.ok) {
+        throw new Error('Erreur lors du chargement des données');
+      }
+
+      const eventsData = await eventsResponse.json();
+      const internshipsData = await internshipsResponse.json();
+
+      setEvents(eventsData);
+      setInternships(internshipsData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fonctions pour obtenir l'icône /colors de l'événement
   const getEventIcon = (type) => {
     switch (type) {
@@ -50,14 +91,14 @@ export default function Home({ navigation }) {
 
   // Données du dashboard mixte (mémorisées)
   const mixedDashboardItems = useMemo(() => {
-    const eventsForDashboard = mockEvents.slice(0, 2).map(event => ({
+    const eventsForDashboard = events.slice(0, 2).map(event => ({
       ...event,
       dashboardType: 'event',
       icon: getEventIcon(event.type),
       iconBg: getEventColor(event.type),
     }));
     
-    const internshipsForDashboard = mockInternship.slice(0, 2).map(internship => ({
+    const internshipsForDashboard = internships.slice(0, 2).map(internship => ({
       ...internship,
       dashboardType: 'internship',
       icon: require('../assets/job.png'),
@@ -67,10 +108,10 @@ export default function Home({ navigation }) {
     // Mélanger les événements et stages
     return [...eventsForDashboard, ...internshipsForDashboard]
       .sort(() => Math.random() - 0.5);
-  }, []);
+  }, [events, internships]);
   
   // Événements à venir (les 3 prochains)
-  const upcomingEvents = useMemo(() => mockEvents
+  const upcomingEvents = useMemo(() => events
     .filter(event => new Date(event.date) > new Date())
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(0, 3)
@@ -79,7 +120,7 @@ export default function Home({ navigation }) {
       icon: getEventIcon(event.type),
       iconBg: getEventColor(event.type),
       formattedDate: formatDate(event.date),
-    })), []);
+    })), [events]);
 
   const getUserName = () => {
     if (user && user.email) {
@@ -149,7 +190,7 @@ export default function Home({ navigation }) {
           <Text style={styles.upcomingDate}>📅 {item.formattedDate}</Text>
         </View>
         <View style={styles.skillsContainer}>
-          {item.requiredSkills.slice(0, 2).map((skill, index) => (
+          {item.requiredSkills?.slice(0, 2).map((skill, index) => (
             <View key={index} style={styles.skillTag}>
               <Text style={styles.skillText}>{skill}</Text>
             </View>
@@ -158,6 +199,33 @@ export default function Home({ navigation }) {
       </View>
     </TouchableOpacity>
   );
+
+  // Écran de chargement
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#0F8A5F" />
+          <Text style={styles.loadingText}>Chargement...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Écran d'erreur
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorEmoji}>😕</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchData}>
+            <Text style={styles.retryText}>Réessayer</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
 
 
@@ -180,7 +248,7 @@ export default function Home({ navigation }) {
           <TouchableOpacity 
             style={styles.statItem}
           >
-            <Text style={styles.statNumber}>{mockEvents.length}</Text>
+            <Text style={styles.statNumber}>{events.length}</Text>
             <Text style={styles.statLabel}>Événements</Text>
           </TouchableOpacity>
           
@@ -189,7 +257,7 @@ export default function Home({ navigation }) {
           <TouchableOpacity 
             style={styles.statItem}
           >
-            <Text style={styles.statNumber}>{mockInternship.length}</Text>
+            <Text style={styles.statNumber}>{internships.length}</Text>
             <Text style={styles.statLabel}>Stages</Text>
           </TouchableOpacity>
           
@@ -245,7 +313,7 @@ export default function Home({ navigation }) {
             </TouchableOpacity>
           </View>
           
-          {mockInternship.slice(0, 2).map((internship) => (
+          {internships.slice(0, 2).map((internship) => (
             <TouchableOpacity
               key={internship.id}
               style={styles.internshipItem}
@@ -263,7 +331,7 @@ export default function Home({ navigation }) {
                   <Text style={styles.internshipLocation}>📍 {internship.location}</Text>
                 </View>
                 <View style={styles.skillsContainer}>
-                  {internship.requiredSkills.slice(0, 3).map((skill, index) => (
+                  {internship.requiredSkills?.slice(0, 3).map((skill, index) => (
                     <View key={index} style={[styles.skillTag, styles.internshipSkill]}>
                       <Text style={styles.skillText}>{skill}</Text>
                     </View>
@@ -286,6 +354,38 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  errorEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#0F8A5F',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
   
   // Header

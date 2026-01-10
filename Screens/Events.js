@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -8,11 +8,42 @@ import {
   FlatList,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from 'react-native';
-import { mockEvents } from '../mockData/mockEvents';
+
+// URL de l'API MockAPI
+const EVENTS_API = 'https://69623fc9d9d64c761907562a.mockapi.io/evenements';
 
 export default function Events({ navigation }) {
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // useEffect pour charger les données au démarrage
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  // Fonction pour récupérer les événements depuis l'API
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(EVENTS_API);
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des événements');
+      }
+      
+      const data = await response.json();
+      setEvents(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getEventIcon = (type) => {
     switch (type) {
@@ -57,7 +88,7 @@ export default function Events({ navigation }) {
     { id: 'Networking', label: 'Networking' }
   ];
 
-  const filteredEvents = mockEvents
+  const filteredEvents = events
     .filter(event => selectedFilter === 'all' || event.type === selectedFilter)
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -114,7 +145,7 @@ export default function Events({ navigation }) {
           </View>
         </View>
         
-        {item.requiredSkills && (
+        {item.requiredSkills && item.requiredSkills.length > 0 && (
           <View style={styles.skillsContainer}>
             {item.requiredSkills.slice(0, 3).map((skill, index) => (
               <View key={index} style={styles.skillTag}>
@@ -130,6 +161,33 @@ export default function Events({ navigation }) {
       </View>
     </TouchableOpacity>
   );
+
+  // Écran de chargement
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#0F8A5F" />
+          <Text style={styles.loadingText}>Chargement des événements...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Écran d'erreur
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorEmoji}>😕</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchEvents}>
+            <Text style={styles.retryText}>Réessayer</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -331,5 +389,39 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
+  },
+  
+  // Loading & Error states
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  errorEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#0F8A5F',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -8,11 +8,42 @@ import {
   FlatList,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from 'react-native';
-import { mockInternship } from '../mockData/mockInternship';
+
+// URL de l'API MockAPI
+const INTERNSHIPS_API = 'https://69623fc9d9d64c761907562a.mockapi.io/stages';
 
 export default function Internships({ navigation }) {
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [internships, setInternships] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // useEffect pour charger les données au démarrage
+  useEffect(() => {
+    fetchInternships();
+  }, []);
+
+  // Fonction pour récupérer les stages depuis l'API
+  const fetchInternships = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(INTERNSHIPS_API);
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des stages');
+      }
+      
+      const data = await response.json();
+      setInternships(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filters = [
     { id: 'all', label: 'Tous' },
@@ -24,21 +55,21 @@ export default function Internships({ navigation }) {
 
   // Filtrer les stages (mémorisé)
   const filteredInternships = useMemo(() => {
-    if (selectedFilter === 'all') return mockInternship;
+    if (selectedFilter === 'all') return internships;
     
     switch (selectedFilter) {
       case 'remote':
-        return mockInternship.filter(i => i.location.toLowerCase().includes('remote'));
+        return internships.filter(i => i.location?.toLowerCase().includes('remote'));
       case 'casablanca':
-        return mockInternship.filter(i => i.location.toLowerCase().includes('casablanca'));
+        return internships.filter(i => i.location?.toLowerCase().includes('casablanca'));
       case 'rabat':
-        return mockInternship.filter(i => i.location.toLowerCase().includes('rabat'));
+        return internships.filter(i => i.location?.toLowerCase().includes('rabat'));
       case 'paid':
-        return mockInternship.filter(i => i.salary.toLowerCase().includes('rémunéré'));
+        return internships.filter(i => i.salary?.toLowerCase().includes('rémunéré'));
       default:
-        return mockInternship;
+        return internships;
     }
-  }, [selectedFilter]);
+  }, [selectedFilter, internships]);
 
   const renderFilterButton = (filter) => (
     <TouchableOpacity
@@ -134,6 +165,33 @@ export default function Internships({ navigation }) {
     </TouchableOpacity>
   );
 
+  // Écran de chargement
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text style={styles.loadingText}>Chargement des stages...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Écran d'erreur
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorEmoji}>😕</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchInternships}>
+            <Text style={styles.retryText}>Réessayer</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -157,20 +215,20 @@ export default function Internships({ navigation }) {
       {/* Quick Stats */}
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{mockInternship.length}</Text>
+          <Text style={styles.statNumber}>{internships.length}</Text>
           <Text style={styles.statLabel}>Total Offres</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>
-            {mockInternship.filter(job => job.salary.includes('rémunéré')).length}
+            {internships.filter(job => job.salary?.includes('rémunéré')).length}
           </Text>
           <Text style={styles.statLabel}>Rémunérées</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>
-            {mockInternship.filter(job => job.location.includes('Remote')).length}
+            {internships.filter(job => job.location?.includes('Remote')).length}
           </Text>
           <Text style={styles.statLabel}>Remote</Text>
         </View>
@@ -432,5 +490,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'white',
     fontWeight: '600',
+  },
+  
+  // Loading & Error states
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  errorEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
