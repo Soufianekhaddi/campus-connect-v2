@@ -35,3 +35,8 @@ yarn-error.*
 # IDE
 .vscode/
 .idea/
+ 
+# Firebase service account (sensitive)
+server/serviceAccountKey.json
+
+server/serviceAccountKey.json
