@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { View, StatusBar, TouchableOpacity, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, AuthContext } from './Contexts/AuthContext';
 import { ProfileProvider } from './Contexts/ProfileContext';
 import Login from './Screens/Login';
@@ -12,6 +13,7 @@ import Internship from './Screens/Internships';
 import Profile from './Screens/Profile';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
@@ -49,111 +51,119 @@ function AppContent() {
 
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: 'white',
-            borderTopWidth: 1,
-            borderTopColor: '#E5E7EB',
-            paddingVertical: 10,
-            paddingHorizontal: 5,
-            height: 70,
-          },
-          tabBarActiveTintColor: '#3B82F6',
-          tabBarInactiveTintColor: '#9CA3AF',
-          tabBarLabelStyle: {
-            fontSize: 10,
-            fontWeight: '600',
-            marginBottom: 5,
-          },
-        }}
-      >
-        <Tab.Screen 
-          name="Home" 
-          component={Home}
-          options={{
-            tabBarLabel: 'Accueil',
-            tabBarIcon: ({ focused, color, size }) => (
-              <View style={[
-                styles.tabIconContainer,
-                focused && styles.activeTabIconContainer
-              ]}>
-                <Image 
-                  source={require('./assets/home.png')} 
-                  style={[
-                    styles.tabIcon,
-                    { tintColor: focused ? 'white' : '#9CA3AF' }
-                  ]}
-                />
-              </View>
-            ),
-          }}
-        />
-        <Tab.Screen 
-          name="Events" 
-          component={Events}
-          options={{
-            tabBarLabel: 'Événements',
-            tabBarIcon: ({ focused, color, size }) => (
-              <View style={[
-                styles.tabIconContainer,
-                focused && styles.activeTabIconContainer
-              ]}>
-                <Image 
-                  source={require('./assets/events.png')} 
-                  style={[
-                    styles.tabIcon,
-                    { tintColor: focused ? 'white' : '#9CA3AF' }
-                  ]}
-                />
-              </View>
-            ),
-          }}
-        />
-        <Tab.Screen 
-          name="Internship" 
-          component={Internship}
-          options={{
-            tabBarLabel: 'Stages',
-            tabBarIcon: ({ focused, color, size }) => (
-              <View style={[
-                styles.tabIconContainer,
-                focused && styles.activeTabIconContainer
-              ]}>
-                <Image 
-                  source={require('./assets/job.png')} 
-                  style={[
-                    styles.tabIcon,
-                    { tintColor: focused ? 'white' : '#9CA3AF' }
-                  ]}
-                />
-              </View>
-            ),
-          }}
-        />
-        <Tab.Screen 
-          name="Profile" 
-          component={Profile}
-          options={{
-            tabBarLabel: 'Profil',
-            tabBarIcon: ({ focused, color, size }) => (
-              <View style={[
-                styles.tabIconContainer,
-                focused && styles.activeTabIconContainer
-              ]}>
-                <Image 
-                  source={require('./assets/profil.png')} 
-                  style={[
-                    styles.tabIcon,
-                    { tintColor: focused ? 'white' : '#9CA3AF' }
-                  ]}
-                />
-              </View>
-            ),
-          }}
-        />
-      </Tab.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="MainTabs">
+          {() => (
+            <Tab.Navigator
+              screenOptions={{
+                headerShown: false,
+                tabBarStyle: {
+                  backgroundColor: 'white',
+                  borderTopWidth: 1,
+                  borderTopColor: '#E5E7EB',
+                  paddingVertical: 10,
+                  paddingHorizontal: 5,
+                  height: 70,
+                },
+                tabBarActiveTintColor: '#3B82F6',
+                tabBarInactiveTintColor: '#9CA3AF',
+                tabBarLabelStyle: {
+                  fontSize: 10,
+                  fontWeight: '600',
+                  marginBottom: 5,
+                },
+              }}
+            >
+              <Tab.Screen 
+                name="Home" 
+                component={Home}
+                options={{
+                  tabBarLabel: 'Accueil',
+                  tabBarIcon: ({ focused, color, size }) => (
+                    <View style={[
+                      styles.tabIconContainer,
+                      focused && styles.activeTabIconContainer
+                    ]}>
+                      <Image 
+                        source={require('./assets/home.png')} 
+                        style={[
+                          styles.tabIcon,
+                          { tintColor: focused ? 'white' : '#9CA3AF' }
+                        ]}
+                      />
+                    </View>
+                  ),
+                }}
+              />
+              <Tab.Screen 
+                name="Events" 
+                component={Events}
+                options={{
+                  tabBarLabel: 'Événements',
+                  tabBarIcon: ({ focused, color, size }) => (
+                    <View style={[
+                      styles.tabIconContainer,
+                      focused && styles.activeTabIconContainer
+                    ]}>
+                      <Image 
+                        source={require('./assets/events.png')} 
+                        style={[
+                          styles.tabIcon,
+                          { tintColor: focused ? 'white' : '#9CA3AF' }
+                        ]}
+                      />
+                    </View>
+                  ),
+                }}
+              />
+              <Tab.Screen 
+                name="Internship" 
+                component={Internship}
+                options={{
+                  tabBarLabel: 'Stages',
+                  tabBarIcon: ({ focused, color, size }) => (
+                    <View style={[
+                      styles.tabIconContainer,
+                      focused && styles.activeTabIconContainer
+                    ]}>
+                      <Image 
+                        source={require('./assets/job.png')} 
+                        style={[
+                          styles.tabIcon,
+                          { tintColor: focused ? 'white' : '#9CA3AF' }
+                        ]}
+                      />
+                    </View>
+                  ),
+                }}
+              />
+              <Tab.Screen 
+                name="Profile" 
+                component={Profile}
+                options={{
+                  tabBarLabel: 'Profil',
+                  tabBarIcon: ({ focused, color, size }) => (
+                    <View style={[
+                      styles.tabIconContainer,
+                      focused && styles.activeTabIconContainer
+                    ]}>
+                      <Image 
+                        source={require('./assets/profil.png')} 
+                        style={[
+                          styles.tabIcon,
+                          { tintColor: focused ? 'white' : '#9CA3AF' }
+                        ]}
+                      />
+                    </View>
+                  ),
+                }}
+              />
+            </Tab.Navigator>
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="ApplyForm" component={require('./Screens/ApplyForm').default} />
+        <Stack.Screen name="EventRegistration" component={require('./Screens/EventRegistration').default} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

@@ -111,7 +111,7 @@ export default function Events({ navigation }) {
   );
 
   const renderEventCard = ({ item }) => (
-    <TouchableOpacity style={styles.eventCard}>
+    <View style={styles.eventCard}>
       <View style={[styles.eventIconContainer, { backgroundColor: getEventColor(item.type) }]}>
         <Image source={getEventIcon(item.type)} style={styles.eventIcon} />
       </View>
@@ -155,11 +155,11 @@ export default function Events({ navigation }) {
           </View>
         )}
         
-        <TouchableOpacity style={styles.registerButton}>
+        <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('EventRegistration', { event: item })}>
           <Text style={styles.registerButtonText}>S'inscrire</Text>
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   // Écran de chargement

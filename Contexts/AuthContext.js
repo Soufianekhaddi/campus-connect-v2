@@ -7,6 +7,7 @@ import {
   onAuthStateChanged 
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { SERVER_URL } from '../config/server';
 
 // Create the context
 export const AuthContext = createContext();
@@ -88,6 +89,32 @@ export const AuthProvider = ({ children }) => {
         email: email,
         createdAt: new Date().toISOString(),
       });
+
+      // Tentative non-bloquante : demander au serveur d'envoyer un email de confirmation
+      (async () => {
+        try {
+          await fetch(`${SERVER_URL}/send-confirmation`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: firebaseUser.uid, email, name }),
+          });
+        } catch (err) {
+          // ignore failures — server may not be configured locally
+          console.log('Email confirmation request failed (non-blocking):', err.message || err);
+        }
+      })();
+
+      // Envoyer un email de confirmation via le serveur SMTP (si configuré)
+      try {
+        const serverUrl = global?.SERVER_URL || 'http://localhost:4000';
+        await fetch(`${serverUrl}/send-confirmation`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: firebaseUser.uid, email, name })
+        });
+      } catch (e) {
+        console.log('Envoi email confirmation échoué (non bloquant):', e.message);
+      }
 
       return { success: true };
     } catch (error) {

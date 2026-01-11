@@ -99,43 +99,43 @@ export default function Internships({ navigation }) {
   };
 
   const renderInternshipCard = ({ item }) => (
-    <TouchableOpacity style={styles.internshipCard}>
+    <View style={styles.internshipCard}>
       <View style={styles.cardHeader}>
         <View style={styles.companyIconContainer}>
           <Text style={styles.companyIcon}>{getCompanyInitials(item.company)}</Text>
         </View>
-        
+
         <View style={styles.headerInfo}>
           <Text style={styles.internshipTitle}>{item.title}</Text>
           <Text style={styles.companyName}>{item.company}</Text>
         </View>
-        
+
         <TouchableOpacity style={styles.favoriteButton}>
           <Text style={styles.favoriteIcon}>♡</Text>
         </TouchableOpacity>
       </View>
-      
+
       <Text style={styles.internshipDescription} numberOfLines={3}>
         {item.description}
       </Text>
-      
+
       <View style={styles.internshipDetails}>
         <View style={styles.detailItem}>
           <Text style={styles.detailIcon}>📍</Text>
           <Text style={styles.detailText}>{item.location}</Text>
         </View>
-        
+
         <View style={styles.detailItem}>
           <Text style={styles.detailIcon}>💰</Text>
           <Text style={styles.detailText}>{item.salary}</Text>
         </View>
-        
+
         <View style={styles.detailItem}>
           <Text style={styles.detailIcon}>📋</Text>
           <Text style={styles.detailText}>{item.type}</Text>
         </View>
       </View>
-      
+
       {item.requiredSkills && (
         <View style={styles.skillsContainer}>
           {item.requiredSkills.slice(0, 4).map((skill, index) => (
@@ -150,19 +150,19 @@ export default function Internships({ navigation }) {
           )}
         </View>
       )}
-      
+
       <View style={styles.cardFooter}>
         <Text style={styles.postedDate}>{item.postedDate}</Text>
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.viewButton}>
             <Text style={styles.viewButtonText}>Voir</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.applyButton}>
+          <TouchableOpacity style={styles.applyButton} onPress={() => navigation.navigate('ApplyForm', { internship: item })}>
             <Text style={styles.applyButtonText}>Postuler</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   // Écran de chargement
